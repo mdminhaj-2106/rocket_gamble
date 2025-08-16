@@ -1,0 +1,420 @@
+<% layout('layouts/main') -%>
+
+<div class="container py-5">
+  <!-- Welcome Header -->
+  <div class="row">
+    <div class="col-12 text-center mb-5">
+      <div class="card card-glass fade-in">
+        <div class="card-body p-5">
+          <h1 class="display-4 font-orbitron text-gradient mb-3">
+            <i class="fas fa-rocket me-3"></i>
+            Welcome, <%= user.name %>!
+          </h1>
+          <p class="lead text-light mb-4">Ready for the ultimate betting adventure?</p>
+          
+          <!-- Credits Display -->
+          <div class="credits-display mb-4">
+            <i class="fas fa-coins me-2"></i>
+            <%= user.credits %> Credits
+          </div>
+          
+          <!-- User Stats -->
+          <div class="row justify-content-center">
+            <div class="col-md-3 col-6">
+              <div class="stat-card">
+                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                <h4>Rank #<%= userRank %></h4>
+                <small class="text-muted">Current Position</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="stat-card">
+                <i class="fas fa-users fa-2x text-info mb-2"></i>
+                <h4><%= totalPlayers %></h4>
+                <small class="text-muted">Total Players</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="stat-card">
+                <i class="fas fa-star fa-2x text-success mb-2"></i>
+                <h4>Round <%= user.currentRound %></h4>
+                <small class="text-muted">Current Level</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="stat-card">
+                <i class="fas fa-medal fa-2x text-primary mb-2"></i>
+                <h4><%= user.totalWinnings %></h4>
+                <small class="text-muted">Total Winnings</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Progress -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="card card-glass">
+        <div class="card-body">
+          <h3 class="text-center text-gradient mb-4">Game Progress</h3>
+          <div class="progress-container">
+            <div class="round-indicators d-flex justify-content-center align-items-center">
+              <div class="round-indicator <%= user.currentRound >= 1 ? 'active' : '' %> <%= user.currentRound > 1 ? 'completed' : '' %>">
+                1
+              </div>
+              <div class="progress-line <%= user.currentRound > 1 ? 'completed' : '' %>"></div>
+              
+              <div class="round-indicator <%= user.currentRound >= 2 ? 'active' : '' %> <%= user.currentRound > 2 ? 'completed' : '' %>">
+                2
+              </div>
+              <div class="progress-line <%= user.currentRound > 2 ? 'completed' : '' %>"></div>
+              
+              <div class="round-indicator <%= user.currentRound >= 3 ? 'active' : '' %>">
+                3
+              </div>
+            </div>
+            
+            <div class="round-labels d-flex justify-content-center mt-3">
+              <div class="text-center mx-4">
+                <small class="text-light">Rocket Distance</small>
+              </div>
+              <div class="text-center mx-4">
+                <small class="text-light">Range Prediction</small>
+              </div>
+              <div class="text-center mx-4">
+                <small class="text-light">Dog Fights</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Round Info -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-glass text-center">
+        <div class="card-body p-5">
+          <% if (user.currentRound === 1) { %>
+            <i class="fas fa-rocket fa-4x text-primary mb-4"></i>
+            <h2 class="text-gradient mb-3">Round 1: Rocket Distance Gamble</h2>
+            <p class="text-light mb-4 lead">
+              Choose which rocket will travel the farthest distance!<br>
+              Place your bet and watch the rockets soar.
+            </p>
+            <div class="round-rules mb-4">
+              <h5 class="text-warning mb-3">Round Rules:</h5>
+              <ul class="list-unstyled text-light">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Choose from 5 different rockets</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Bet between 10-500 credits</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Winners split the losing pot</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>One choice only - choose wisely!</li>
+              </ul>
+            </div>
+            <a href="/game/round1" class="btn btn-gradient btn-lg px-5">
+              <i class="fas fa-rocket me-2"></i>Start Round 1
+            </a>
+            
+          <% } else if (user.currentRound === 2) { %>
+            <i class="fas fa-bullseye fa-4x text-warning mb-4"></i>
+            <h2 class="text-gradient mb-3">Round 2: Range Prediction</h2>
+            <p class="text-light mb-4 lead">
+              Predict the exact range of the syringe rocket!<br>
+              Precision is key to victory.
+            </p>
+            <div class="round-rules mb-4">
+              <h5 class="text-warning mb-3">Round Rules:</h5>
+              <ul class="list-unstyled text-light">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Predict range: 0-1000 meters</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Within 50m = Winner!</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Closer prediction = Bigger bonus</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Bet between 10-500 credits</li>
+              </ul>
+            </div>
+            <a href="/game/round2" class="btn btn-gradient btn-lg px-5">
+              <i class="fas fa-bullseye me-2"></i>Start Round 2
+            </a>
+            
+          <% } else if (user.currentRound === 3) { %>
+            <i class="fas fa-paw fa-4x text-danger mb-4"></i>
+            <h2 class="text-gradient mb-3">Round 3: Nexus Dog Fights</h2>
+            <p class="text-light mb-4 lead">
+              20 epic dog fights await!<br>
+              Choose the winner in each battle.
+            </p>
+            <div class="round-rules mb-4">
+              <h5 class="text-warning mb-3">Final Round Rules:</h5>
+              <ul class="list-unstyled text-light">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>20 consecutive battles</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Bet 10-200 credits per fight</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Winners double their bet</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Losers are eliminated</li>
+              </ul>
+            </div>
+            <a href="/game/round3" class="btn btn-gradient btn-lg px-5">
+              <i class="fas fa-paw me-2"></i>Enter the Arena
+            </a>
+            
+          <% } else { %>
+            <i class="fas fa-trophy fa-4x text-success mb-4"></i>
+            <h2 class="text-gradient mb-3">Game Complete!</h2>
+            <p class="text-light mb-4 lead">
+              Congratulations on completing all rounds!
+            </p>
+            <a href="/game/winners" class="btn btn-gradient btn-lg px-5">
+              <i class="fas fa-crown me-2"></i>View Final Results
+            </a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row mt-5">
+    <div class="col-md-6 mb-3">
+      <div class="card card-glass">
+        <div class="card-body text-center p-4">
+          <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+          <h5 class="text-light">View Leaderboard</h5>
+          <p class="text-muted mb-3">Check your ranking against other players</p>
+          <a href="/game/leaderboard" class="btn btn-outline-light">
+            <i class="fas fa-trophy me-2"></i>Leaderboard
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="card card-glass">
+        <div class="card-body text-center p-4">
+          <i class="fas fa-history fa-3x text-secondary mb-3"></i>
+          <h5 class="text-light">Betting History</h5>
+          <p class="text-muted mb-3">Review your previous bets and results</p>
+          <button class="btn btn-outline-light" onclick="showBettingHistory()">
+            <i class="fas fa-list me-2"></i>View History
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Betting History Modal -->
+<div class="modal fade" id="bettingHistoryModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h5 class="modal-title text-gradient">
+          <i class="fas fa-history me-2"></i>Your Betting History
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="bettingHistoryContent">
+        <div class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.stat-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.progress-container {
+  padding: 20px 0;
+}
+
+.round-indicators {
+  position: relative;
+}
+
+.progress-line {
+  width: 80px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  margin: 0 20px;
+  border-radius: 2px;
+  transition: all 0.6s ease;
+}
+
+.progress-line.completed {
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.round-labels {
+  margin-top: 20px;
+}
+
+.round-rules {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.modal-content {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+}
+
+/* Animation for stats */
+.stat-card h4 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .round-indicators {
+    transform: scale(0.8);
+  }
+  
+  .round-labels .mx-4 {
+    margin: 0 1rem !important;
+  }
+  
+  .stat-card {
+    margin-bottom: 15px;
+  }
+  
+  .display-4 {
+    font-size: 2.5rem !important;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Animate stats counters
+  animateCounters();
+  
+  // Socket connection for real-time updates
+  const socket = io();
+  socket.emit('join-game', '<%= user._id %>');
+  
+  // Listen for real-time updates
+  socket.on('credits-updated', function(data) {
+    if (data.userId === '<%= user._id %>') {
+      updateCreditsDisplay(data.newCredits);
+    }
+  });
+  
+  // Animate entrance
+  gsap.timeline()
+    .from('.fade-in', { opacity: 0, y: 50, duration: 0.8 })
+    .from('.stat-card', { opacity: 0, y: 30, duration: 0.6, stagger: 0.1 }, '-=0.4')
+    .from('.round-indicator', { scale: 0, duration: 0.5, stagger: 0.1 }, '-=0.3');
+});
+
+function animateCounters() {
+  const counters = document.querySelectorAll('.stat-card h4');
+  counters.forEach(counter => {
+    const target = parseInt(counter.textContent.replace(/[^0-9]/g, ''));
+    if (target && target > 0) {
+      gsap.to(counter, {
+        innerHTML: target,
+        duration: 2,
+        ease: "power2.out",
+        snap: { innerHTML: 1 },
+        onUpdate: function() {
+          const value = Math.round(this.targets()[0].innerHTML);
+          counter.innerHTML = counter.textContent.includes('#') ? `#${value}` : value;
+        }
+      });
+    }
+  });
+}
+
+function updateCreditsDisplay(newCredits) {
+  const creditsDisplay = document.querySelector('.credits-display');
+  gsap.to(creditsDisplay, {
+    scale: 1.1,
+    duration: 0.2,
+    yoyo: true,
+    repeat: 1,
+    onComplete: function() {
+      creditsDisplay.innerHTML = `<i class="fas fa-coins me-2"></i>${newCredits} Credits`;
+    }
+  });
+}
+
+async function showBettingHistory() {
+  const modal = new bootstrap.Modal(document.getElementById('bettingHistoryModal'));
+  modal.show();
+  
+  try {
+    const response = await fetch('/auth/profile');
+    const data = await response.json();
+    
+    const content = document.getElementById('bettingHistoryContent');
+    
+    if (data.recentBets && data.recentBets.length > 0) {
+      content.innerHTML = `
+        <div class="table-responsive">
+          <table class="table table-dark table-striped">
+            <thead>
+              <tr>
+                <th>Round</th>
+                <th>Amount</th>
+                <th>Choice</th>
+                <th>Result</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.recentBets.map(bet => `
+                <tr>
+                  <td>Round ${bet.round}${bet.subRound > 1 ? `.${bet.subRound}` : ''}</td>
+                  <td><span class="badge bg-warning">${bet.amount}</span></td>
+                  <td>${bet.choice}</td>
+                  <td>
+                    <span class="badge ${bet.result === 'won' ? 'bg-success' : bet.result === 'lost' ? 'bg-danger' : 'bg-secondary'}">
+                      ${bet.result.toUpperCase()}
+                    </span>
+                  </td>
+                  <td>${new Date(bet.timestamp).toLocaleDateString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    } else {
+      content.innerHTML = `
+        <div class="text-center text-light">
+          <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+          <h5>No betting history yet</h5>
+          <p class="text-muted">Start playing to see your bet history here!</p>
+        </div>
+      `;
+    }
+  } catch (error) {
+    document.getElementById('bettingHistoryContent').innerHTML = `
+      <div class="alert alert-danger">
+        Failed to load betting history. Please try again.
+      </div>
+    `;
+  }
+}
+</script>

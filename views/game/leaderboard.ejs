@@ -1,0 +1,927 @@
+<% layout('layouts/main') -%>
+
+<div class="container py-5">
+  <!-- Leaderboard Header -->
+  <div class="row">
+    <div class="col-12 text-center mb-5">
+      <div class="card card-glass fade-in">
+        <div class="card-body p-4">
+          <h1 class="font-orbitron text-gradient mb-3">
+            <i class="fas fa-trophy fa-2x me-3"></i>
+            <% if (currentRound) { %>
+              Round <%= currentRound %> Leaderboard
+            <% } else { %>
+              Final Leaderboard
+            <% } %>
+          </h1>
+          <p class="lead text-light mb-4">
+            <% if (currentRound) { %>
+              Results are being calculated... Watch the magic happen!
+            <% } else { %>
+              The ultimate champions have been decided!
+            <% } %>
+          </p>
+          
+          <!-- Live Update Status -->
+          <div class="update-status mb-3">
+            <div class="status-indicator" id="statusIndicator">
+              <i class="fas fa-sync-alt fa-spin me-2"></i>
+              <span id="statusText">Calculating results...</span>
+            </div>
+          </div>
+          
+          <!-- User Position Highlight -->
+          <% if (typeof userRank !== 'undefined' && userRank > 0) { %>
+            <div class="user-position-highlight">
+              <h4 class="text-warning mb-2">
+                <i class="fas fa-star me-2"></i>Your Position: #<%= userRank %>
+              </h4>
+              <div class="position-details">
+                <span class="badge bg-primary me-2">
+                  <i class="fas fa-coins me-1"></i><%= user.credits %> Credits
+                </span>
+                <span class="badge bg-success">
+                  <i class="fas fa-chart-line me-1"></i>₹<%= user.totalWinnings %> Won
+                </span>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Animation Controls -->
+  <div class="row mb-4">
+    <div class="col-12 text-center">
+      <div class="animation-controls">
+        <button class="btn btn-outline-light me-2" onclick="animateLeaderboard()">
+          <i class="fas fa-play me-2"></i>Replay Animation
+        </button>
+        <button class="btn btn-outline-info me-2" onclick="toggleAutoUpdate()">
+          <i class="fas fa-sync me-2"></i>
+          <span id="autoUpdateText">Auto Update: ON</span>
+        </button>
+        <div class="btn-group" role="group">
+          <button class="btn btn-outline-warning" onclick="sortBy('credits')">Sort by Credits</button>
+          <button class="btn btn-outline-success" onclick="sortBy('winnings')">Sort by Winnings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Podium (Top 3) -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="podium-container">
+        <div class="podium-stage">
+          <!-- Second Place -->
+          <div class="podium-position second-place" id="secondPlace">
+            <div class="podium-rank">2</div>
+            <div class="podium-avatar">
+              <i class="fas fa-medal fa-3x text-silver"></i>
+            </div>
+            <div class="podium-info">
+              <h5 class="podium-name">-</h5>
+              <p class="podium-credits">0 Credits</p>
+            </div>
+          </div>
+          
+          <!-- First Place -->
+          <div class="podium-position first-place" id="firstPlace">
+            <div class="podium-crown">
+              <i class="fas fa-crown fa-2x text-warning"></i>
+            </div>
+            <div class="podium-rank">1</div>
+            <div class="podium-avatar">
+              <i class="fas fa-trophy fa-4x text-warning"></i>
+            </div>
+            <div class="podium-info">
+              <h4 class="podium-name">-</h4>
+              <p class="podium-credits">0 Credits</p>
+            </div>
+          </div>
+          
+          <!-- Third Place -->
+          <div class="podium-position third-place" id="thirdPlace">
+            <div class="podium-rank">3</div>
+            <div class="podium-avatar">
+              <i class="fas fa-medal fa-3x text-bronze"></i>
+            </div>
+            <div class="podium-info">
+              <h5 class="podium-name">-</h5>
+              <p class="podium-credits">0 Credits</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Leaderboard -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-glass">
+        <div class="card-header bg-transparent border-0">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h3 class="text-gradient mb-0">
+                <i class="fas fa-list-ol me-2"></i>Full Rankings
+              </h3>
+            </div>
+            <div class="col-md-6 text-end">
+              <div class="leaderboard-stats">
+                <span class="badge bg-info me-2" id="totalPlayersCount">
+                  <i class="fas fa-users me-1"></i>0 Players
+                </span>
+                <span class="badge bg-warning" id="totalCreditsPool">
+                  <i class="fas fa-coins me-1"></i>0 Total Credits
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="leaderboard-list" id="leaderboardList">
+            <!-- Leaderboard items will be populated here -->
+            <div class="loading-placeholder text-center py-5">
+              <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-light">Loading leaderboard...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Round Navigation -->
+  <% if (currentRound && currentRound < 3) { %>
+    <div class="row mt-5">
+      <div class="col-12 text-center">
+        <div class="card card-glass">
+          <div class="card-body p-4">
+            <h4 class="text-gradient mb-3">
+              <i class="fas fa-rocket me-2"></i>Ready for the Next Challenge?
+            </h4>
+            <p class="text-light mb-4">
+              Round <%= currentRound %> is complete. Time to advance to Round <%= currentRound + 1 %>!
+            </p>
+            <button class="btn btn-gradient btn-lg px-5" onclick="advanceToNextRound()">
+              <i class="fas fa-arrow-right me-2"></i>
+              Continue to Round <%= currentRound + 1 %>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Final Winners Link -->
+  <% if (!currentRound || currentRound >= 3) { %>
+    <div class="row mt-5">
+      <div class="col-12 text-center">
+        <div class="card card-glass">
+          <div class="card-body p-4">
+            <h4 class="text-gradient mb-3">
+              <i class="fas fa-crown me-2"></i>View Final Winners
+            </h4>
+            <p class="text-light mb-4">
+              See the ultimate champions and their final rewards!
+            </p>
+            <a href="/game/winners" class="btn btn-gradient btn-lg px-5">
+              <i class="fas fa-trophy me-2"></i>
+              Final Results
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<style>
+/* Podium Styles */
+.podium-container {
+  perspective: 1000px;
+  margin: 50px 0;
+}
+
+.podium-stage {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 20px;
+  height: 300px;
+  position: relative;
+}
+
+.podium-position {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px 20px 0 0;
+  text-align: center;
+  padding: 20px;
+  position: relative;
+  backdrop-filter: blur(10px);
+  border: 2px solid transparent;
+  transition: all 0.5s ease;
+  min-width: 180px;
+}
+
+.first-place {
+  height: 250px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 193, 7, 0.1));
+  border-color: #ffd700;
+  transform: scale(1.05);
+}
+
+.second-place {
+  height: 200px;
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.2), rgba(169, 169, 169, 0.1));
+  border-color: #c0c0c0;
+}
+
+.third-place {
+  height: 150px;
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), rgba(184, 115, 51, 0.1));
+  border-color: #cd7f32;
+}
+
+.podium-crown {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: crownFloat 3s ease-in-out infinite;
+}
+
+.podium-rank {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  border: 3px solid white;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.podium-avatar {
+  margin: 20px 0;
+}
+
+.podium-info {
+  color: white;
+  margin-top: 15px;
+}
+
+.podium-name {
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.podium-credits {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+/* Leaderboard List Styles */
+.leaderboard-list {
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.leaderboard-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(-50px);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.leaderboard-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.8s;
+}
+
+.leaderboard-item.animate::before {
+  left: 100%;
+}
+
+.leaderboard-item:hover {
+  transform: translateX(10px) scale(1.02);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary-gradient);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.leaderboard-item.highlight {
+  background: rgba(0, 242, 254, 0.2);
+  border-color: #00f2fe;
+  animation: highlightPulse 2s ease-in-out infinite;
+}
+
+.rank-badge {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-right: 20px;
+  position: relative;
+}
+
+.rank-1 { 
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #000;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.rank-2 { 
+  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+  color: #000;
+  box-shadow: 0 0 20px rgba(192, 192, 192, 0.5);
+}
+
+.rank-3 { 
+  background: linear-gradient(135deg, #cd7f32, #daa520);
+  color: #000;
+  box-shadow: 0 0 20px rgba(205, 127, 50, 0.5);
+}
+
+.rank-other { 
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.player-info {
+  flex: 1;
+  margin-left: 20px;
+}
+
+.player-name {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.player-details {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.credits-info {
+  text-align: right;
+  margin-left: 20px;
+}
+
+.credits-main {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffc107;
+  display: block;
+}
+
+.credits-change {
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.credits-up {
+  color: #28a745;
+}
+
+.credits-down {
+  color: #dc3545;
+}
+
+/* Status Indicator */
+.update-status {
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 25px;
+  display: inline-block;
+}
+
+.status-indicator {
+  color: #17a2b8;
+  font-weight: 500;
+}
+
+.status-indicator.complete {
+  color: #28a745;
+}
+
+.status-indicator.error {
+  color: #dc3545;
+}
+
+/* Animations */
+@keyframes crownFloat {
+  0%, 100% { transform: translateX(-50%) translateY(0px); }
+  50% { transform: translateX(-50%) translateY(-10px); }
+}
+
+@keyframes highlightPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 242, 254, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(0, 242, 254, 0.7); }
+}
+
+@keyframes countUp {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Silver and Bronze text colors */
+.text-silver { color: #c0c0c0; }
+.text-bronze { color: #cd7f32; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .podium-stage {
+    height: 250px;
+    gap: 10px;
+  }
+  
+  .podium-position {
+    min-width: 120px;
+    padding: 15px 10px;
+  }
+  
+  .first-place {
+    height: 200px;
+  }
+  
+  .second-place {
+    height: 160px;
+  }
+  
+  .third-place {
+    height: 120px;
+  }
+  
+  .podium-avatar i {
+    font-size: 2rem !important;
+  }
+  
+  .leaderboard-item {
+    padding: 15px;
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .rank-badge {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+  
+  .credits-info {
+    margin-left: 0;
+    text-align: center;
+  }
+  
+  .animation-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .animation-controls .btn-group {
+    width: 100%;
+  }
+}
+
+/* Custom Scrollbar for leaderboard */
+.leaderboard-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.leaderboard-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.leaderboard-list::-webkit-scrollbar-thumb {
+  background: var(--primary-gradient);
+  border-radius: 4px;
+}
+
+.leaderboard-list::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-gradient);
+}
+</style>
+
+<script>
+let socket;
+let autoUpdate = true;
+let leaderboardData = [];
+let animationInProgress = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize socket connection
+  socket = io();
+  socket.emit('join-game', '<%= user._id %>');
+  
+  // Listen for real-time updates
+  socket.on('leaderboard-update', handleLeaderboardUpdate);
+  socket.on('round-completed', handleRoundCompletion);
+  socket.on('credits-updated', handleCreditsUpdate);
+  
+  // Initial load
+  loadLeaderboard();
+  
+  // Auto-update interval
+  setInterval(() => {
+    if (autoUpdate && !animationInProgress) {
+      loadLeaderboard(false); // Silent update
+    }
+  }, 5000);
+  
+  // Initial entrance animation
+  gsap.from('.fade-in', {
+    opacity: 0,
+    y: 50,
+    duration: 1,
+    ease: "power2.out"
+  });
+});
+
+async function loadLeaderboard(showLoading = true) {
+  try {
+    if (showLoading) {
+      updateStatus('Loading leaderboard...', 'loading');
+    }
+    
+    const response = await fetch('/game/api/leaderboard');
+    const data = await response.json();
+    
+    if (data.success) {
+      leaderboardData = data.leaderboard;
+      updatePodium(leaderboardData.slice(0, 3));
+      updateLeaderboardList(leaderboardData);
+      updateStats(data);
+      updateStatus('Leaderboard updated', 'complete');
+      
+      setTimeout(() => {
+        updateStatus('Live updates active', 'loading');
+      }, 2000);
+      
+    } else {
+      updateStatus('Failed to load leaderboard', 'error');
+    }
+  } catch (error) {
+    console.error('Leaderboard error:', error);
+    updateStatus('Connection error', 'error');
+  }
+}
+
+function updatePodium(topThree) {
+  const positions = ['first', 'second', 'third'];
+  
+  topThree.forEach((player, index) => {
+    const position = positions[index];
+    const element = document.getElementById(`${position}Place`);
+    
+    if (element) {
+      const nameElement = element.querySelector('.podium-name');
+      const creditsElement = element.querySelector('.podium-credits');
+      
+      if (nameElement && creditsElement) {
+        nameElement.textContent = player.name;
+        creditsElement.textContent = `${player.credits.toLocaleString()} Credits`;
+        
+        // Add special effects for current user
+        if (player.isCurrentUser) {
+          element.classList.add('highlight');
+        } else {
+          element.classList.remove('highlight');
+        }
+      }
+    }
+  });
+  
+  // Animate podium entrance
+  gsap.from('.podium-position', {
+    y: 100,
+    opacity: 0,
+    duration: 1,
+    stagger: 0.2,
+    ease: "bounce.out",
+    delay: 0.5
+  });
+}
+
+function updateLeaderboardList(players) {
+  const listContainer = document.getElementById('leaderboardList');
+  
+  // Clear existing items
+  listContainer.innerHTML = '';
+  
+  players.forEach((player, index) => {
+    const item = createLeaderboardItem(player, index + 1);
+    listContainer.appendChild(item);
+  });
+  
+  // Animate leaderboard items
+  animateLeaderboard();
+}
+
+function createLeaderboardItem(player, rank) {
+  const item = document.createElement('div');
+  item.className = `leaderboard-item ${player.isCurrentUser ? 'highlight' : ''}`;
+  item.setAttribute('data-user-id', player.id);
+  
+  const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+  const changeIcon = player.creditsChange > 0 ? 'fa-arrow-up credits-up' : 
+                     player.creditsChange < 0 ? 'fa-arrow-down credits-down' : 
+                     'fa-minus';
+  
+  item.innerHTML = `
+    <div class="rank-badge ${rankClass}">
+      ${rank}
+      ${rank === 1 ? '<i class="fas fa-crown crown-icon"></i>' : ''}
+    </div>
+    
+    <div class="player-info">
+      <div class="player-name">
+        ${player.name}
+        ${player.isCurrentUser ? '<i class="fas fa-star text-warning ms-2"></i>' : ''}
+      </div>
+      <div class="player-details">
+        <i class="fas fa-chart-line me-1"></i>Total Winnings: ₹${(player.totalWinnings || 0).toLocaleString()}
+        <span class="ms-3">
+          <i class="fas fa-gamepad me-1"></i>Round: ${player.currentRound || 1}
+        </span>
+      </div>
+    </div>
+    
+    <div class="credits-info">
+      <span class="credits-main" data-credits="${player.credits}">
+        ${player.credits.toLocaleString()}
+      </span>
+      ${player.creditsChange ? `
+        <div class="credits-change ${changeIcon.includes('up') ? 'credits-up' : 'credits-down'}">
+          <i class="fas ${changeIcon.split(' ')[0]} me-1"></i>
+          ${Math.abs(player.creditsChange || 0).toLocaleString()}
+        </div>
+      ` : ''}
+    </div>
+  `;
+  
+  return item;
+}
+
+function animateLeaderboard() {
+  if (animationInProgress) return;
+  
+  animationInProgress = true;
+  const items = document.querySelectorAll('.leaderboard-item');
+  
+  // Reset positions
+  gsap.set(items, {
+    opacity: 0,
+    x: -50,
+    scale: 0.9
+  });
+  
+  // Animate items in sequence
+  gsap.to(items, {
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    duration: 0.6,
+    stagger: 0.1,
+    ease: "back.out(1.7)",
+    onComplete: () => {
+      animationInProgress = false;
+      
+      // Add shimmer effect
+      items.forEach(item => {
+        item.classList.add('animate');
+        setTimeout(() => item.classList.remove('animate'), 800);
+      });
+      
+      // Animate credits counting
+      animateCreditsCount();
+    }
+  });
+}
+
+function animateCreditsCount() {
+  const creditsElements = document.querySelectorAll('.credits-main');
+  
+  creditsElements.forEach(element => {
+    const targetValue = parseInt(element.getAttribute('data-credits'));
+    const startValue = 0;
+    
+    gsap.to({ value: startValue }, {
+      value: targetValue,
+      duration: 2,
+      ease: "power2.out",
+      onUpdate: function() {
+        const currentValue = Math.round(this.targets()[0].value);
+        element.textContent = currentValue.toLocaleString();
+      }
+    });
+  });
+}
+
+function updateStats(data) {
+  document.getElementById('totalPlayersCount').innerHTML = 
+    `<i class="fas fa-users me-1"></i>${data.totalPlayers} Players`;
+  
+  const totalCredits = leaderboardData.reduce((sum, player) => sum + player.credits, 0);
+  document.getElementById('totalCreditsPool').innerHTML = 
+    `<i class="fas fa-coins me-1"></i>${totalCredits.toLocaleString()} Total Credits`;
+}
+
+function updateStatus(message, type) {
+  const statusIndicator = document.getElementById('statusIndicator');
+  const statusText = document.getElementById('statusText');
+  
+  statusIndicator.className = `status-indicator ${type}`;
+  statusText.textContent = message;
+  
+  const icon = statusIndicator.querySelector('i');
+  if (type === 'loading') {
+    icon.className = 'fas fa-sync-alt fa-spin me-2';
+  } else if (type === 'complete') {
+    icon.className = 'fas fa-check-circle me-2';
+  } else if (type === 'error') {
+    icon.className = 'fas fa-exclamation-triangle me-2';
+  }
+}
+
+function toggleAutoUpdate() {
+  autoUpdate = !autoUpdate;
+  const buttonText = document.getElementById('autoUpdateText');
+  buttonText.textContent = `Auto Update: ${autoUpdate ? 'ON' : 'OFF'}`;
+  
+  if (autoUpdate) {
+    loadLeaderboard();
+    updateStatus('Auto updates enabled', 'complete');
+  } else {
+    updateStatus('Auto updates disabled', 'error');
+  }
+}
+
+function sortBy(criteria) {
+  let sortedData = [...leaderboardData];
+  
+  if (criteria === 'credits') {
+    sortedData.sort((a, b) => b.credits - a.credits);
+  } else if (criteria === 'winnings') {
+    sortedData.sort((a, b) => (b.totalWinnings || 0) - (a.totalWinnings || 0));
+  }
+  
+  updateLeaderboardList(sortedData);
+}
+
+async function advanceToNextRound() {
+  try {
+    showLoading('Advancing to next round...');
+    
+    const response = await fetch('/game/advance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showSuccess('Advancing to next round...');
+      setTimeout(() => {
+        window.location.href = '/game/landing';
+      }, 2000);
+    } else {
+      showError('Failed to advance round');
+    }
+  } catch (error) {
+    console.error('Advance error:', error);
+    showError('Network error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// Real-time event handlers
+function handleLeaderboardUpdate(data) {
+  if (autoUpdate && !animationInProgress) {
+    leaderboardData = data.leaderboard;
+    updatePodium(leaderboardData.slice(0, 3));
+    updateLeaderboardList(leaderboardData);
+    
+    showNotification('Leaderboard updated!', 'info');
+  }
+}
+
+function handleRoundCompletion(data) {
+  updateStatus(`Round ${data.round} completed!`, 'complete');
+  showNotification(`Round ${data.round} results are in!`, 'success');
+  
+  setTimeout(() => {
+    loadLeaderboard();
+  }, 2000);
+}
+
+function handleCreditsUpdate(data) {
+  // Find and update specific user's credits
+  const userItem = document.querySelector(`[data-user-id="${data.userId}"]`);
+  if (userItem) {
+    const creditsElement = userItem.querySelector('.credits-main');
+    
+    // Animate credits change
+    gsap.fromTo(creditsElement, 
+      { scale: 1, color: '#ffc107' },
+      { 
+        scale: 1.2, 
+        color: '#28a745',
+        duration: 0.3,
+        yoyo: true,
+        repeat: 1,
+        onComplete: () => {
+          creditsElement.textContent = data.newCredits.toLocaleString();
+        }
+      }
+    );
+  }
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `alert alert-${type} notification`;
+  notification.style.cssText = `
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    opacity: 0;
+    transform: translateX(100%);
+  `;
+  notification.innerHTML = `
+    <i class="fas fa-info-circle me-2"></i>
+    ${message}
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Animate in
+  gsap.to(notification, {
+    opacity: 1,
+    x: 0,
+    duration: 0.5,
+    ease: "back.out(1.7)"
+  });
+  
+  // Remove after 4 seconds
+  setTimeout(() => {
+    gsap.to(notification, {
+      opacity: 0,
+      x: 100,
+      duration: 0.3,
+      onComplete: () => notification.remove()
+    });
+  }, 4000);
+}
+
+// Cleanup
+window.addEventListener('beforeunload', function() {
+  if (socket) {
+    socket.disconnect();
+  }
+});
+</script>

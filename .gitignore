@@ -1,0 +1,5 @@
+# Environment files
+.env.example
+
+# Node modules
+node_modules/

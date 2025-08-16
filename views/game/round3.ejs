@@ -1,0 +1,802 @@
+<% layout('layouts/main') -%>
+
+<div class="container py-5">
+  <!-- Round Header -->
+  <div class="row">
+    <div class="col-12 text-center mb-4">
+      <div class="card card-glass fade-in">
+        <div class="card-body p-4">
+          <h1 class="font-orbitron text-gradient mb-3">
+            <i class="fas fa-fist-raised fa-2x me-3"></i>
+            Round 3: Nexus Dog Fights
+          </h1>
+          <div class="fight-progress mb-3">
+            <h3 class="text-warning">
+              Fight <%= currentSubRound %> of <%= totalSubRounds %>
+            </h3>
+            <div class="progress mb-2">
+              <div class="progress-bar bg-gradient" role="progressbar" 
+                   style="width: <%= (currentSubRound / totalSubRounds) * 100 %>%">
+              </div>
+            </div>
+          </div>
+          
+          <!-- User Info Bar -->
+          <div class="user-info-bar">
+            <div class="row align-items-center">
+              <div class="col-md-4">
+                <div class="credits-display">
+                  <i class="fas fa-coins me-2"></i>
+                  <span id="userCredits"><%= user.credits %></span> Credits
+                </div>
+              </div>
+              <div class="col-md-4">
+                <h5 class="text-light mb-0">
+                  <i class="fas fa-user me-2"></i><%= user.name %>
+                </h5>
+              </div>
+              <div class="col-md-4">
+                <div class="fight-counter">
+                  <i class="fas fa-trophy me-2"></i>
+                  <span id="fightsWon">0</span> Wins
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fight Arena -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="card card-glass fight-arena">
+        <div class="card-body p-5">
+          <h2 class="text-center text-gradient mb-4">
+            <i class="fas fa-crown me-2"></i>WHO WILL WIN?
+          </h2>
+          
+          <!-- Fighters -->
+          <div class="row fighters-container">
+            <!-- Fighter A -->
+            <div class="col-md-5">
+              <div class="fighter-card fighter-a" data-fighter="<%= fighterA %>" onclick="selectFighter('<%= fighterA %>')">
+                <div class="fighter-avatar">
+                  <i class="fas fa-dog fa-4x"></i>
+                </div>
+                <h3 class="fighter-name"><%= fighterA %></h3>
+                <div class="fighter-stats">
+                  <div class="stat-bar">
+                    <label>Strength</label>
+                    <div class="stat-fill" style="width: <%= Math.floor(Math.random() * 30) + 70 %>%"></div>
+                  </div>
+                  <div class="stat-bar">
+                    <label>Speed</label>
+                    <div class="stat-fill" style="width: <%= Math.floor(Math.random() * 30) + 70 %>%"></div>
+                  </div>
+                  <div class="stat-bar">
+                    <label>Agility</label>
+                    <div class="stat-fill" style="width: <%= Math.floor(Math.random() * 30) + 70 %>%"></div>
+                  </div>
+                </div>
+                <div class="selection-overlay">
+                  <i class="fas fa-check-circle fa-3x"></i>
+                  <p class="mt-2">SELECTED!</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- VS Separator -->
+            <div class="col-md-2 d-flex align-items-center justify-content-center">
+              <div class="vs-separator">
+                <div class="vs-circle">
+                  <span class="vs-text">VS</span>
+                  <div class="lightning-bolts">
+                    <i class="fas fa-bolt bolt-1"></i>
+                    <i class="fas fa-bolt bolt-2"></i>
+                    <i class="fas fa-bolt bolt-3"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fighter B -->
+            <div class="col-md-5">
+              <div class="fighter-card fighter-b" data-fighter="<%= fighterB %>" onclick="selectFighter('<%= fighterB %>')">
+                <div class="fighter-avatar">
+                  <i class="fas fa-dog fa-4x"></i>
+                </div>
+                <h3 class="fighter-name"><%= fighterB %></h3>
+                <div class="fighter-stats">
+                  <div class="stat-bar">
+                    <label>Strength</label>
+                    <div class="stat-fill" style="width: <%= Math.floor(Math.random() * 30) + 70 %>%"></div>
+                  </div>
+                  <div class="stat-bar">
+                    <label>Speed</label>
+                    <div class="stat-fill" style="width: <%= Math.floor(Math.random() * 30) + 70 %>%"></div>
+                  </div>
+                  <div class="stat-bar">
+                    <label>Agility</label>
+                    <div class="stat-fill" style="width: <%= Math.floor(Math.random() * 30) + 70 %>%"></div>
+                  </div>
+                </div>
+                <div class="selection-overlay">
+                  <i class="fas fa-check-circle fa-3x"></i>
+                  <p class="mt-2">SELECTED!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bet Amount -->
+          <div class="betting-section mt-5">
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <h4 class="text-center text-light mb-3">
+                  <i class="fas fa-coins me-2"></i>Place Your Bet
+                </h4>
+                
+                <div class="bet-controls">
+                  <div class="input-group mb-3">
+                    <button class="btn btn-outline-light" type="button" onclick="adjustBet(-25)">-25</button>
+                    <button class="btn btn-outline-light" type="button" onclick="adjustBet(-10)">-10</button>
+                    <input type="number" id="betAmount" class="form-control text-center" 
+                           value="25" min="10" max="200" onchange="validateBetAmount()">
+                    <button class="btn btn-outline-light" type="button" onclick="adjustBet(10)">+10</button>
+                    <button class="btn btn-outline-light" type="button" onclick="adjustBet(25)">+25</button>
+                  </div>
+                  
+                  <div class="bet-presets text-center">
+                    <button class="btn btn-sm btn-outline-warning me-2" onclick="setBetAmount(10)">10</button>
+                    <button class="btn btn-sm btn-outline-warning me-2" onclick="setBetAmount(50)">50</button>
+                    <button class="btn btn-sm btn-outline-warning me-2" onclick="setBetAmount(100)">100</button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="setBetAmount(200)">Max</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fight Button -->
+          <div class="text-center mt-4">
+            <button id="fightButton" class="btn btn-gradient btn-lg px-5" onclick="placeFightBet()" disabled>
+              <i class="fas fa-fist-raised me-2"></i>
+              <span class="button-text">Choose a fighter first!</span>
+            </button>
+            <div class="mt-3">
+              <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Winners double their bet! Losers lose everything.
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fight Stats -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card card-glass">
+        <div class="card-header bg-transparent border-0">
+          <h5 class="text-gradient mb-0">
+            <i class="fas fa-chart-bar me-2"></i>Your Fight Record
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="fight-record">
+            <div class="record-item">
+              <span class="record-label">Fights Won:</span>
+              <span class="record-value text-success" id="userWins">0</span>
+            </div>
+            <div class="record-item">
+              <span class="record-label">Fights Lost:</span>
+              <span class="record-value text-danger" id="userLosses">0</span>
+            </div>
+            <div class="record-item">
+              <span class="record-label">Win Rate:</span>
+              <span class="record-value text-info" id="winRate">0%</span>
+            </div>
+            <div class="record-item">
+              <span class="record-label">Total Winnings:</span>
+              <span class="record-value text-warning" id="totalWinnings">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card card-glass">
+        <div class="card-header bg-transparent border-0">
+          <h5 class="text-gradient mb-0">
+            <i class="fas fa-users me-2"></i>Round 3 Stats
+          </h5>
+        </div>
+        <div class="card-body">
+          <div id="liveStats" class="round3-stats">
+            <div class="stat-item">
+              <span class="stat-label">Active Players:</span>
+              <span class="stat-value text-info" id="activePlayers">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Current Fight:</span>
+              <span class="stat-value text-primary" id="currentFightDisplay"><%= currentSubRound %>/20</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Total Eliminated:</span>
+              <span class="stat-value text-danger" id="eliminatedCount">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Prize Pool:</span>
+              <span class="stat-value text-success" id="prizePool">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.fight-arena {
+  background: linear-gradient(135deg, rgba(255, 0, 0, 0.1) 0%, rgba(0, 0, 255, 0.1) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.fighters-container {
+  margin: 40px 0;
+}
+
+.fighter-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 3px solid transparent;
+  border-radius: 20px;
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  height: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.fighter-a {
+  border-left: 5px solid #ff6b6b;
+}
+
+.fighter-b {
+  border-right: 5px solid #4ecdc4;
+}
+
+.fighter-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  border-color: var(--primary-gradient);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.fighter-card.selected {
+  border-color: #00f2fe;
+  background: rgba(0, 242, 254, 0.2);
+  transform: translateY(-10px) scale(1.05);
+}
+
+.fighter-avatar {
+  margin-bottom: 20px;
+}
+
+.fighter-avatar i {
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.fighter-card:hover .fighter-avatar i {
+  color: #00f2fe;
+  transform: scale(1.1);
+}
+
+.fighter-name {
+  color: white;
+  font-weight: bold;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.fighter-stats {
+  margin-top: 20px;
+}
+
+.stat-bar {
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.stat-bar label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.stat-bar {
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ffa500, #32cd32);
+  border-radius: 4px;
+  transition: width 1s ease-in-out;
+}
+
+.selection-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 242, 254, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+  border-radius: 20px;
+  color: white;
+}
+
+.fighter-card.selected .selection-overlay {
+  opacity: 1;
+}
+
+.vs-separator {
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vs-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: vsRotate 3s linear infinite;
+}
+
+.vs-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.lightning-bolts {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  pointer-events: none;
+}
+
+.lightning-bolts i {
+  position: absolute;
+  color: #ffd700;
+  font-size: 1.2rem;
+  animation: lightning 2s infinite;
+}
+
+.bolt-1 { top: 10%; left: 10%; animation-delay: 0s; }
+.bolt-2 { top: 80%; right: 10%; animation-delay: 0.7s; }
+.bolt-3 { top: 50%; right: -10%; animation-delay: 1.4s; }
+
+.betting-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 30px;
+  backdrop-filter: blur(10px);
+}
+
+.bet-controls .input-group {
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.bet-controls input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.bet-controls input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #00f2fe;
+  color: white;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+}
+
+.fight-record, .round3-stats {
+  padding: 20px 0;
+}
+
+.record-item, .stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.record-item:last-child, .stat-item:last-child {
+  border-bottom: none;
+}
+
+.record-label, .stat-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.record-value, .stat-value {
+  font-weight: bold;
+}
+
+.fight-counter {
+  background: rgba(40, 167, 69, 0.2);
+  border: 1px solid rgba(40, 167, 69, 0.5);
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: #28a745;
+  font-weight: bold;
+}
+
+/* Animations */
+@keyframes vsRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes lightning {
+  0%, 90%, 100% { opacity: 0; }
+  5%, 85% { opacity: 1; }
+}
+
+/* Disabled states */
+.fighter-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .fighters-container {
+    margin: 20px 0;
+  }
+  
+  .fighter-card {
+    height: 300px;
+    margin-bottom: 20px;
+    padding: 20px 15px;
+  }
+  
+  .fighter-avatar i {
+    font-size: 3rem !important;
+  }
+  
+  .fighter-name {
+    font-size: 1.2rem;
+  }
+  
+  .vs-separator {
+    height: 80px;
+    margin: 20px 0;
+  }
+  
+  .vs-circle {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .vs-text {
+    font-size: 1.2rem;
+  }
+  
+  .betting-section {
+    padding: 20px;
+    margin-top: 30px;
+  }
+}
+</style>
+
+<script>
+let selectedFighter = null;
+let userWins = 0;
+let userLosses = 0;
+let socket;
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize socket
+  socket = io();
+  socket.emit('join-game', '<%= user._id %>');
+  
+  // Load user stats
+  loadUserStats();
+  updateLiveStats();
+  
+  // Listen for real-time updates
+  socket.on('bet-placed', updateLiveStats);
+  socket.on('fight-completed', handleFightCompletion);
+  
+  // Animate entrance
+  gsap.timeline()
+    .from('.fade-in', { opacity: 0, y: 50, duration: 0.8 })
+    .from('.fighter-card', { 
+      opacity: 0, 
+      scale: 0.8, 
+      rotationY: 180, 
+      duration: 0.8, 
+      stagger: 0.2,
+      ease: "back.out(1.7)" 
+    }, '-=0.4')
+    .from('.vs-circle', { 
+      scale: 0, 
+      rotation: 180, 
+      duration: 0.6,
+      ease: "bounce.out" 
+    }, '-=0.6');
+  
+  // Animate stat bars
+  setTimeout(() => {
+    gsap.to('.stat-fill', {
+      width: '100%',
+      duration: 1.5,
+      ease: "power2.out",
+      stagger: 0.1
+    });
+  }, 1000);
+});
+
+function selectFighter(fighterName) {
+  // Remove previous selection
+  document.querySelectorAll('.fighter-card').forEach(card => {
+    card.classList.remove('selected');
+  });
+  
+  // Add selection to clicked fighter
+  const fighterCard = document.querySelector(`[data-fighter="${fighterName}"]`);
+  fighterCard.classList.add('selected');
+  selectedFighter = fighterName;
+  
+  // Enable fight button
+  const fightButton = document.getElementById('fightButton');
+  fightButton.disabled = false;
+  fightButton.querySelector('.button-text').textContent = `Bet on ${fighterName}!`;
+  
+  // Animate selection
+  gsap.timeline()
+    .to(fighterCard, {
+      scale: 1.1,
+      duration: 0.3,
+      ease: "back.out(1.7)"
+    })
+    .to(fighterCard, {
+      scale: 1.05,
+      duration: 0.2
+    });
+  
+  // Victory sound effect
+  playSelectionSound();
+}
+
+function adjustBet(amount) {
+  const betInput = document.getElementById('betAmount');
+  const currentBet = parseInt(betInput.value) || 0;
+  const newBet = Math.max(10, Math.min(200, Math.min(<%= user.credits %>, currentBet + amount)));
+  betInput.value = newBet;
+  validateBetAmount();
+}
+
+function setBetAmount(amount) {
+  const maxBet = Math.min(200, <%= user.credits %>);
+  document.getElementById('betAmount').value = Math.min(amount, maxBet);
+  validateBetAmount();
+  
+  gsap.from('#betAmount', {
+    scale: 1.2,
+    duration: 0.3,
+    ease: "back.out(1.7)"
+  });
+}
+
+function validateBetAmount() {
+  const betInput = document.getElementById('betAmount');
+  const bet = parseInt(betInput.value) || 0;
+  const userCredits = <%= user.credits %>;
+  
+  if (bet < 10 || bet > 200 || bet > userCredits) {
+    betInput.classList.add('is-invalid');
+    return false;
+  } else {
+    betInput.classList.remove('is-invalid');
+    return true;
+  }
+}
+
+async function placeFightBet() {
+  if (!selectedFighter || !validateBetAmount()) {
+    showError('Please select a fighter and enter a valid bet amount.');
+    return;
+  }
+  
+  const betAmount = parseInt(document.getElementById('betAmount').value);
+  
+  // Show confirmation
+  const confirmed = confirm(`Ready to fight?\n\nFighter: ${selectedFighter}\nBet: ${betAmount} credits\n\nWin = Double your bet!\nLose = Lose everything!`);
+  
+  if (!confirmed) return;
+  
+  try {
+    showLoading('Placing fight bet...');
+    
+    const response = await fetch('/game/round3/bet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fighter: selectedFighter,
+        betAmount: betAmount
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Update credits display
+      document.getElementById('userCredits').textContent = data.remainingCredits;
+      
+      // Disable selection
+      disableFighters();
+      
+      // Check if this was the last fight
+      if (data.isLastFight) {
+        showSuccess('Final fight completed! Redirecting to final results...');
+        setTimeout(() => {
+          window.location.href = '/game/winners';
+        }, 3000);
+      } else {
+        showSuccess(`Fight bet placed! Moving to fight ${data.nextSubRound}...`);
+        setTimeout(() => {
+          window.location.reload(); // Load next fight
+        }, 2000);
+      }
+      
+    } else {
+      showError(data.error || 'Failed to place fight bet');
+    }
+    
+  } catch (error) {
+    console.error('Fight bet error:', error);
+    showError('Network error. Please try again.');
+  } finally {
+    hideLoading();
+  }
+}
+
+function disableFighters() {
+  document.querySelectorAll('.fighter-card').forEach(card => {
+    card.classList.add('disabled');
+    card.onclick = null;
+  });
+  
+  document.getElementById('fightButton').disabled = true;
+  document.getElementById('fightButton').innerHTML = '<i class="fas fa-check me-2"></i>Fight Bet Placed!';
+  
+  // Disable betting controls
+  document.getElementById('betAmount').disabled = true;
+  document.querySelectorAll('.bet-presets button').forEach(btn => {
+    btn.disabled = true;
+  });
+}
+
+function loadUserStats() {
+  // Load user's fight record from previous fights
+  const currentFight = <%= currentSubRound %>;
+  userWins = Math.floor(Math.random() * (currentFight - 1)); // Mock data
+  userLosses = (currentFight - 1) - userWins;
+  
+  document.getElementById('userWins').textContent = userWins;
+  document.getElementById('userLosses').textContent = userLosses;
+  
+  const winRate = currentFight > 1 ? Math.round((userWins / (currentFight - 1)) * 100) : 0;
+  document.getElementById('winRate').textContent = winRate + '%';
+  
+  const totalWinnings = userWins * 50; // Estimate
+  document.getElementById('totalWinnings').textContent = totalWinnings;
+}
+
+async function updateLiveStats() {
+  try {
+    const response = await fetch('/admin/api/stats');
+    const data = await response.json();
+    
+    if (data.success) {
+      document.getElementById('activePlayers').textContent = data.stats.activeUsers;
+      document.getElementById('eliminatedCount').textContent = Math.floor(Math.random() * 50);
+      document.getElementById('prizePool').textContent = (data.stats.round3Bets * 25).toLocaleString();
+      
+      // Animate updates
+      gsap.from('.stat-value', {
+        scale: 1.2,
+        duration: 0.3,
+        stagger: 0.05,
+        ease: "back.out(1.7)"
+      });
+    }
+  } catch (error) {
+    console.error('Error updating stats:', error);
+  }
+}
+
+function handleFightCompletion(data) {
+  if (data.subRound === <%= currentSubRound %>) {
+    const isWinner = data.winner === selectedFighter;
+    
+    if (isWinner) {
+      userWins++;
+      showSuccess(`${selectedFighter} wins! You doubled your bet!`);
+      // Update credits display with winnings
+      const currentCredits = parseInt(document.getElementById('userCredits').textContent);
+      const betAmount = parseInt(document.getElementById('betAmount').value);
+      document.getElementById('userCredits').textContent = currentCredits + betAmount;
+    } else {
+      userLosses++;
+      showError(`${data.winner} wins. Better luck next fight!`);
+    }
+    
+    // Update win counter
+    document.getElementById('fightsWon').textContent = userWins;
+    
+    setTimeout(() => {
+      if (<%= currentSubRound %> < 20) {
+        window.location.reload();
+      } else {
+        window.location.href = '/game/winners';
+      }
+    }, 3000);
+  }
+}
+
+function playSelectionSound() {
+  try {
+    const audio = new Audio('/sounds/fight-select.mp3');
+    audio.volume = 0.4;
+    audio.play().catch(() => {});
+  } catch (e) {}
+}
+
+// Cleanup
+window.addEventListener('beforeunload', function() {
+  if (socket) {
+    socket.disconnect();
+  }
+});
+</script>

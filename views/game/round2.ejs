@@ -1,0 +1,657 @@
+<% layout('layouts/main') -%>
+
+<div class="container py-5">
+  <!-- Round Header -->
+  <div class="row">
+    <div class="col-12 text-center mb-5">
+      <div class="card card-glass fade-in">
+        <div class="card-body p-4">
+          <h1 class="font-orbitron text-gradient mb-3">
+            <i class="fas fa-bullseye fa-2x me-3"></i>
+            Round 2: Range Prediction Challenge
+          </h1>
+          <p class="lead text-light mb-4">Predict the exact range of our syringe rocket!</p>
+          
+          <!-- User Info Bar -->
+          <div class="user-info-bar mb-4">
+            <div class="row align-items-center">
+              <div class="col-md-4">
+                <div class="credits-display">
+                  <i class="fas fa-coins me-2"></i>
+                  <span id="userCredits"><%= user.credits %></span> Credits
+                </div>
+              </div>
+              <div class="col-md-4">
+                <h5 class="text-light mb-0">
+                  <i class="fas fa-user me-2"></i><%= user.name %>
+                </h5>
+              </div>
+              <div class="col-md-4">
+                <div class="timer-display" id="gameTimer">
+                  <i class="fas fa-clock me-2"></i>
+                  <span id="timeLeft">05:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prediction Interface -->
+  <div class="row mb-5">
+    <div class="col-lg-8 mx-auto">
+      <div class="card card-glass">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <div class="syringe-animation mb-4">
+              <i class="fas fa-syringe fa-4x text-primary"></i>
+              <div class="trajectory-line"></div>
+              <div class="target-zone">
+                <i class="fas fa-bullseye fa-2x text-success"></i>
+              </div>
+            </div>
+            
+            <h3 class="text-gradient mb-3">
+              <i class="fas fa-crosshairs me-2"></i>Make Your Prediction
+            </h3>
+            <p class="text-light">
+              The syringe rocket will be launched. Predict its range in meters!<br>
+              <small class="text-warning">
+                <i class="fas fa-info-circle me-1"></i>
+                Predictions within 50 meters of the actual range win!
+              </small>
+            </p>
+          </div>
+
+          <!-- Range Prediction Slider -->
+          <div class="prediction-section mb-5">
+            <div class="range-slider-container">
+              <label class="form-label text-light mb-3">
+                <i class="fas fa-ruler-horizontal me-2"></i>
+                Range Prediction: <span id="rangeDisplay" class="text-warning">500</span> meters
+              </label>
+              
+              <div class="range-slider-wrapper">
+                <input type="range" id="rangeSlider" class="form-range custom-range" 
+                       min="0" max="1000" value="500" step="10" 
+                       oninput="updateRangeDisplay(this.value)">
+                
+                <div class="range-markers">
+                  <span class="marker" style="left: 0%">0m</span>
+                  <span class="marker" style="left: 25%">250m</span>
+                  <span class="marker" style="left: 50%">500m</span>
+                  <span class="marker" style="left: 75%">750m</span>
+                  <span class="marker" style="left: 100%">1000m</span>
+                </div>
+              </div>
+              
+              <!-- Quick Select Buttons -->
+              <div class="quick-select-buttons mt-4 text-center">
+                <button class="btn btn-sm btn-outline-info me-2" onclick="setRange(100)">100m</button>
+                <button class="btn btn-sm btn-outline-info me-2" onclick="setRange(250)">250m</button>
+                <button class="btn btn-sm btn-outline-info me-2" onclick="setRange(500)">500m</button>
+                <button class="btn btn-sm btn-outline-info me-2" onclick="setRange(750)">750m</button>
+                <button class="btn btn-sm btn-outline-info" onclick="setRange(900)">900m</button>
+              </div>
+
+              <!-- Manual Input -->
+              <div class="manual-input mt-4">
+                <div class="input-group justify-content-center">
+                  <span class="input-group-text bg-dark text-light border-secondary">
+                    <i class="fas fa-edit"></i>
+                  </span>
+                  <input type="number" id="manualRange" class="form-control text-center" 
+                         min="0" max="1000" placeholder="Enter exact range" 
+                         onchange="updateFromManualInput()" style="max-width: 200px;">
+                  <span class="input-group-text bg-dark text-light border-secondary">meters</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bet Amount Section -->
+          <div class="bet-section mb-4">
+            <h5 class="text-center text-light mb-3">
+              <i class="fas fa-coins me-2"></i>Bet Amount
+            </h5>
+            
+            <div class="bet-amount-controls">
+              <div class="input-group justify-content-center">
+                <button class="btn btn-outline-light" type="button" onclick="adjustBet(-50)">-50</button>
+                <button class="btn btn-outline-light" type="button" onclick="adjustBet(-10)">-10</button>
+                <input type="number" id="betAmount" class="form-control text-center" 
+                       value="50" min="10" max="500" onchange="validateBetAmount()" 
+                       style="max-width: 150px;">
+                <button class="btn btn-outline-light" type="button" onclick="adjustBet(10)">+10</button>
+                <button class="btn btn-outline-light" type="button" onclick="adjustBet(50)">+50</button>
+              </div>
+              
+              <div class="bet-presets mt-3 text-center">
+                <button class="btn btn-sm btn-outline-warning me-2" onclick="setBetAmount(25)">25</button>
+                <button class="btn btn-sm btn-outline-warning me-2" onclick="setBetAmount(100)">100</button>
+                <button class="btn btn-sm btn-outline-warning me-2" onclick="setBetAmount(250)">250</button>
+                <button class="btn btn-sm btn-outline-warning" onclick="setBetAmount(<%= user.credits %>)">All In</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Prediction Button -->
+          <div class="text-center">
+            <button id="submitButton" class="btn btn-gradient btn-lg px-5" onclick="submitPrediction()">
+              <i class="fas fa-paper-plane me-2"></i>
+              Submit Prediction
+            </button>
+            <div class="mt-3">
+              <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Your prediction will be locked once submitted!
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prediction Analysis -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="card card-glass">
+        <div class="card-header bg-transparent border-0">
+          <h5 class="text-gradient mb-0">
+            <i class="fas fa-calculator me-2"></i>Prediction Analysis
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-3 col-6">
+              <div class="analysis-item">
+                <i class="fas fa-target fa-2x text-success mb-2"></i>
+                <h5 class="text-light" id="winZoneStart">450m</h5>
+                <small class="text-muted">Win Zone Start</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="analysis-item">
+                <i class="fas fa-bullseye fa-2x text-success mb-2"></i>
+                <h5 class="text-light" id="yourPrediction">500m</h5>
+                <small class="text-muted">Your Prediction</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="analysis-item">
+                <i class="fas fa-flag-checkered fa-2x text-success mb-2"></i>
+                <h5 class="text-light" id="winZoneEnd">550m</h5>
+                <small class="text-muted">Win Zone End</small>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="analysis-item">
+                <i class="fas fa-percentage fa-2x text-info mb-2"></i>
+                <h5 class="text-light" id="winChance">16.7%</h5>
+                <small class="text-muted">Win Probability</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Stats -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-glass">
+        <div class="card-header bg-transparent border-0">
+          <h5 class="text-gradient mb-0">
+            <i class="fas fa-chart-line me-2"></i>Live Round 2 Stats
+          </h5>
+        </div>
+        <div class="card-body">
+          <div id="liveStats" class="row text-center">
+            <div class="col-6 col-md-3">
+              <div class="stat-box">
+                <h4 class="text-info" id="totalPlayers">0</h4>
+                <small class="text-muted">Players Active</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="stat-box">
+                <h4 class="text-warning" id="totalPredictions">0</h4>
+                <small class="text-muted">Predictions Made</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="stat-box">
+                <h4 class="text-success" id="averageRange">0m</h4>
+                <small class="text-muted">Average Prediction</small>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="stat-box">
+                <h4 class="text-danger" id="timeRemaining">05:00</h4>
+                <small class="text-muted">Time Left</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.syringe-animation {
+  position: relative;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.syringe-animation .fas.fa-syringe {
+  transform: rotate(45deg);
+  animation: syringeBounce 3s infinite;
+}
+
+.trajectory-line {
+  position: absolute;
+  width: 200px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00f2fe, transparent);
+  left: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: trajectoryFlow 2s infinite;
+}
+
+.target-zone {
+  position: absolute;
+  right: -50px;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: targetPulse 2s infinite;
+}
+
+.range-slider-container {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.custom-range {
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(90deg, 
+    #dc3545 0%, 
+    #ffc107 25%, 
+    #28a745 50%, 
+    #ffc107 75%, 
+    #dc3545 100%);
+  border-radius: 5px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.custom-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #00f2fe;
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+.custom-range::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #00f2fe;
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+.range-markers {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.range-markers .marker {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+}
+
+.analysis-item {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.analysis-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+#rangeDisplay {
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+}
+
+@keyframes syringeBounce {
+  0%, 100% { transform: rotate(45deg) translateY(0px); }
+  50% { transform: rotate(45deg) translateY(-10px); }
+}
+
+@keyframes trajectoryFlow {
+  0% { opacity: 0.3; transform: translateY(-50%) scaleX(0); }
+  50% { opacity: 1; transform: translateY(-50%) scaleX(1); }
+  100% { opacity: 0.3; transform: translateY(-50%) scaleX(0); }
+}
+
+@keyframes targetPulse {
+  0%, 100% { transform: translateY(-50%) scale(1); opacity: 0.7; }
+  50% { transform: translateY(-50%) scale(1.1); opacity: 1; }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .syringe-animation {
+    height: 80px;
+  }
+  
+  .trajectory-line {
+    width: 150px;
+  }
+  
+  .target-zone {
+    right: -30px;
+  }
+  
+  .range-slider-container {
+    padding: 15px;
+  }
+  
+  #rangeDisplay {
+    font-size: 1.5rem;
+  }
+  
+  .analysis-item {
+    margin-bottom: 10px;
+    padding: 15px;
+  }
+}
+</style>
+
+<script>
+let gameTimer = 300; // 5 minutes
+let timerInterval;
+let socket;
+let currentRange = 500;
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize socket
+  socket = io();
+  socket.emit('join-game', '<%= user._id %>');
+  
+  // Start game timer
+  startGameTimer();
+  
+  // Load live stats
+  updateLiveStats();
+  
+  // Listen for real-time updates
+  socket.on('bet-placed', updateLiveStats);
+  socket.on('round-closed', handleRoundClosure);
+  
+  // Animate entrance
+  gsap.timeline()
+    .from('.fade-in', { opacity: 0, y: 50, duration: 0.8 })
+    .from('.syringe-animation', { opacity: 0, scale: 0.8, duration: 0.6 }, '-=0.4')
+    .from('.range-slider-container', { opacity: 0, y: 30, duration: 0.6 }, '-=0.3');
+  
+  // Initialize prediction analysis
+  updatePredictionAnalysis();
+});
+
+function startGameTimer() {
+  timerInterval = setInterval(() => {
+    gameTimer--;
+    updateTimerDisplay();
+    
+    if (gameTimer <= 0) {
+      clearInterval(timerInterval);
+      disablePrediction();
+      showTimeUpMessage();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const minutes = Math.floor(gameTimer / 60);
+  const seconds = gameTimer % 60;
+  const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  
+  document.getElementById('timeLeft').textContent = timeString;
+  document.getElementById('timeRemaining').textContent = timeString;
+  
+  const timerElement = document.getElementById('gameTimer');
+  if (gameTimer <= 60) {
+    timerElement.className = 'timer-display critical';
+  } else if (gameTimer <= 120) {
+    timerElement.className = 'timer-display warning';
+  }
+}
+
+function updateRangeDisplay(value) {
+  currentRange = parseInt(value);
+  document.getElementById('rangeDisplay').textContent = currentRange;
+  document.getElementById('manualRange').value = currentRange;
+  updatePredictionAnalysis();
+  
+  // Animate range change
+  gsap.fromTo('#rangeDisplay', 
+    { scale: 1.2, color: '#00f2fe' },
+    { scale: 1, color: '#ffc107', duration: 0.3 }
+  );
+}
+
+function updateFromManualInput() {
+  const manualInput = document.getElementById('manualRange');
+  const value = Math.max(0, Math.min(1000, parseInt(manualInput.value) || 0));
+  
+  document.getElementById('rangeSlider').value = value;
+  updateRangeDisplay(value);
+}
+
+function setRange(value) {
+  document.getElementById('rangeSlider').value = value;
+  updateRangeDisplay(value);
+  
+  // Animate selection
+  gsap.fromTo('.range-slider-wrapper', 
+    { scale: 1.05 },
+    { scale: 1, duration: 0.3, ease: "back.out(1.7)" }
+  );
+}
+
+function updatePredictionAnalysis() {
+  const winZoneStart = Math.max(0, currentRange - 50);
+  const winZoneEnd = Math.min(1000, currentRange + 50);
+  const winProbability = (101 / 1001 * 100).toFixed(1); // 101 meters out of 1001 possible
+  
+  document.getElementById('winZoneStart').textContent = winZoneStart + 'm';
+  document.getElementById('yourPrediction').textContent = currentRange + 'm';
+  document.getElementById('winZoneEnd').textContent = winZoneEnd + 'm';
+  document.getElementById('winChance').textContent = winProbability + '%';
+}
+
+function adjustBet(amount) {
+  const betInput = document.getElementById('betAmount');
+  const currentBet = parseInt(betInput.value) || 0;
+  const newBet = Math.max(10, Math.min(500, Math.min(<%= user.credits %>, currentBet + amount)));
+  betInput.value = newBet;
+  validateBetAmount();
+}
+
+function setBetAmount(amount) {
+  const maxBet = Math.min(500, <%= user.credits %>);
+  document.getElementById('betAmount').value = Math.min(amount, maxBet);
+  validateBetAmount();
+  
+  gsap.from('#betAmount', {
+    scale: 1.1,
+    duration: 0.3,
+    ease: "back.out(1.7)"
+  });
+}
+
+function validateBetAmount() {
+  const betInput = document.getElementById('betAmount');
+  const bet = parseInt(betInput.value) || 0;
+  const userCredits = <%= user.credits %>;
+  
+  if (bet < 10 || bet > 500 || bet > userCredits) {
+    betInput.classList.add('is-invalid');
+    return false;
+  } else {
+    betInput.classList.remove('is-invalid');
+    return true;
+  }
+}
+
+async function submitPrediction() {
+  if (!validateBetAmount()) {
+    showError('Please enter a valid bet amount.');
+    return;
+  }
+  
+  const betAmount = parseInt(document.getElementById('betAmount').value);
+  const rangeGuess = currentRange;
+  
+  // Show confirmation
+  const confirmed = confirm(`Confirm your prediction?\n\nRange: ${rangeGuess}m\nBet: ${betAmount} credits\n\nThis cannot be changed!`);
+  
+  if (!confirmed) return;
+  
+  try {
+    showLoading('Submitting your prediction...');
+    
+    const response = await fetch('/game/round2/bet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        rangeGuess: rangeGuess,
+        betAmount: betAmount
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Update credits display
+      document.getElementById('userCredits').textContent = data.remainingCredits;
+      
+      // Disable prediction
+      disablePrediction();
+      
+      // Show success and redirect
+      showSuccess('Prediction submitted successfully! Redirecting to leaderboard...');
+      
+      setTimeout(() => {
+        window.location.href = '/game/leaderboard';
+      }, 2000);
+      
+    } else {
+      showError(data.error || 'Failed to submit prediction');
+    }
+    
+  } catch (error) {
+    console.error('Prediction error:', error);
+    showError('Network error. Please try again.');
+  } finally {
+    hideLoading();
+  }
+}
+
+function disablePrediction() {
+  document.getElementById('rangeSlider').disabled = true;
+  document.getElementById('manualRange').disabled = true;
+  document.getElementById('betAmount').disabled = true;
+  document.getElementById('submitButton').disabled = true;
+  document.getElementById('submitButton').innerHTML = '<i class="fas fa-check me-2"></i>Prediction Submitted';
+  
+  // Disable all buttons
+  document.querySelectorAll('.quick-select-buttons button, .bet-presets button').forEach(btn => {
+    btn.disabled = true;
+  });
+}
+
+function showTimeUpMessage() {
+  showWarning('Time is up! Prediction phase is now closed.');
+  
+  setTimeout(() => {
+    window.location.href = '/game/leaderboard';
+  }, 3000);
+}
+
+async function updateLiveStats() {
+  try {
+    const response = await fetch('/admin/api/stats');
+    const data = await response.json();
+    
+    if (data.success) {
+      document.getElementById('totalPlayers').textContent = data.stats.activeUsers;
+      document.getElementById('totalPredictions').textContent = data.stats.round2Bets;
+      
+      // Calculate average (mock data for now)
+      const avgRange = Math.floor(Math.random() * 200) + 400; // 400-600m average
+      document.getElementById('averageRange').textContent = avgRange + 'm';
+      
+      // Animate updates
+      gsap.from('#liveStats .stat-box h4', {
+        scale: 1.1,
+        duration: 0.3,
+        stagger: 0.05,
+        ease: "back.out(1.7)"
+      });
+    }
+  } catch (error) {
+    console.error('Error updating stats:', error);
+  }
+}
+
+function handleRoundClosure(data) {
+  if (data.round === 2) {
+    clearInterval(timerInterval);
+    disablePrediction();
+    showInfo(`Round 2 complete! Actual range: ${data.result}m`);
+    
+    setTimeout(() => {
+      window.location.href = '/game/leaderboard';
+    }, 3000);
+  }
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+  }
+  if (socket) {
+    socket.disconnect();
+  }
+});
+</script>

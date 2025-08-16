@@ -1,0 +1,60 @@
+{
+  "name": "rocket-betting-game",
+  "version": "1.0.0",
+  "description": "Epic multiplayer rocket betting game with real-time updates",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node scripts/seed.js",
+    "test": "jest",
+    "lint": "eslint .",
+    "build": "echo 'No build step required'",
+    "postinstall": "echo 'Dependencies installed successfully'"
+  },
+  "keywords": [
+    "game",
+    "betting",
+    "multiplayer",
+    "real-time",
+    "socket.io",
+    "mongodb",
+    "express"
+  ],
+  "author": "Rocket Betting Team",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "connect-mongo": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "express-session": "^1.17.3",
+    "express-validator": "^6.15.0",
+    "helmet": "^6.1.5",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.0.3",
+    "socket.io": "^4.6.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.38.0",
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/rocket-betting-game.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/rocket-betting-game/issues"
+  },
+  "homepage": "https://rocket-betting-game.render.com"
+}
