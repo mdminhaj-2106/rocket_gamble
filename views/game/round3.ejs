@@ -27,7 +27,7 @@
               <div class="col-md-4">
                 <div class="credits-display">
                   <i class="fas fa-coins me-2"></i>
-                  <span id="userCredits"><%= user.credits %></span> Credits
+                  <span id="userCredits"><%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %></span> Credits
                 </div>
               </div>
               <div class="col-md-4">
@@ -609,13 +609,13 @@ function selectFighter(fighterName) {
 function adjustBet(amount) {
   const betInput = document.getElementById('betAmount');
   const currentBet = parseInt(betInput.value) || 0;
-  const newBet = Math.max(10, Math.min(200, Math.min(<%= user.credits %>, currentBet + amount)));
+  const newBet = Math.max(10, Math.min(200, Math.min(<%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %>, currentBet + amount)));
   betInput.value = newBet;
   validateBetAmount();
 }
 
 function setBetAmount(amount) {
-  const maxBet = Math.min(200, <%= user.credits %>);
+  const maxBet = Math.min(200, <%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %>);
   document.getElementById('betAmount').value = Math.min(amount, maxBet);
   validateBetAmount();
   
@@ -629,7 +629,7 @@ function setBetAmount(amount) {
 function validateBetAmount() {
   const betInput = document.getElementById('betAmount');
   const bet = parseInt(betInput.value) || 0;
-  const userCredits = <%= user.credits %>;
+  const userCredits = <%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %>;
   
   if (bet < 10 || bet > 200 || bet > userCredits) {
     betInput.classList.add('is-invalid');

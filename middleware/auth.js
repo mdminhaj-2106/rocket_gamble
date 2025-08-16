@@ -1,67 +1,78 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Adjust path as needed
+// middleware/auth.js - Updated to work with sessions
 
+const User = require('../models/User');
+
+// Session-based authentication middleware
 const requireAuth = async (req, res, next) => {
   try {
-    // Get token from header
-    const token = req.header('Authorization')?.replace('Bearer ', '') || 
-                  req.cookies.token || 
-                  req.session.token;
-
-    if (!token) {
-      return res.status(401).redirect('/auth/login');
+    // Check if user is logged in via session
+    if (!req.session || !req.session.userId) {
+      return res.redirect('/auth/login?error=Please log in first');
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    
-    // Get user from database
-    const user = await User.findById(decoded.userId).select('-password');
+    // Get user from database and attach to request
+    const user = await User.findById(req.session.userId);
     
     if (!user) {
-      return res.status(401).redirect('/auth/login');
+      // Clear invalid session
+      req.session.destroy();
+      return res.redirect('/auth/login?error=User not found');
     }
 
-    // Add user to request object
+    // Attach user to request object for controllers
     req.user = user;
     next();
+    
   } catch (error) {
     console.error('Auth middleware error:', error);
-    return res.status(401).redirect('/auth/login');
+    return res.redirect('/auth/login?error=Authentication error');
   }
 };
 
+// Optional auth - doesn't redirect if not authenticated
 const optionalAuth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '') || 
-                  req.cookies.token || 
-                  req.session.token;
-
-    if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-      const user = await User.findById(decoded.userId).select('-password');
+    if (req.session && req.session.userId) {
+      const user = await User.findById(req.session.userId);
       if (user) {
         req.user = user;
       }
     }
     next();
   } catch (error) {
-    // Continue without auth if token is invalid
-    next();
+    console.error('Optional auth error:', error);
+    next(); // Continue without auth
   }
 };
 
-// Alternative session-based auth if you're using sessions instead of JWT
+// Admin authentication middleware
+const requireAdmin = async (req, res, next) => {
+  try {
+    // Check admin session flag
+    if (!req.session || !req.session.isAdmin) {
+      return res.redirect('/admin/login?error=Admin access required');
+    }
+
+    next();
+    
+  } catch (error) {
+    console.error('Admin auth error:', error);
+    return res.redirect('/admin/login?error=Authentication error');
+  }
+};
+
+// Alternative session-based auth (keeping for compatibility)
 const requireAuthSession = (req, res, next) => {
   if (req.session && req.session.userId) {
     return next();
   } else {
-    return res.status(401).redirect('/auth/login');
+    return res.redirect('/auth/login?error=Please log in first');
   }
 };
 
 module.exports = {
   requireAuth,
   optionalAuth,
+  requireAdmin,
   requireAuthSession
 };

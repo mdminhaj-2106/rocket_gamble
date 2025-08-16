@@ -15,7 +15,7 @@
           <!-- Credits Display -->
           <div class="credits-display mb-4">
             <i class="fas fa-coins me-2"></i>
-            <%= user.credits %> Credits
+            <%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %> Credits
           </div>
           
           <!-- User Stats -->

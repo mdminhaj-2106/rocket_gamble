@@ -18,7 +18,7 @@
               <div class="col-md-4">
                 <div class="credits-display">
                   <i class="fas fa-coins me-2"></i>
-                  <span id="userCredits"><%= user.credits %></span> Credits
+                  <span id="userCredits"><%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %></span> Credits
                 </div>
               </div>
               <div class="col-md-4">
@@ -66,7 +66,7 @@
                     <button class="btn btn-sm btn-outline-warning me-2" onclick="setBetAmount(25)">25</button>
                     <button class="btn btn-sm btn-outline-warning me-2" onclick="setBetAmount(100)">100</button>
                     <button class="btn btn-sm btn-outline-warning me-2" onclick="setBetAmount(250)">250</button>
-                    <button class="btn btn-sm btn-outline-warning" onclick="setBetAmount(<%= user.credits %>)">All In</button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="setBetAmount(<%= typeof user !== 'undefined' ? user.credits : 0 %>)">All In</button>
                   </div>
                 </div>
               </div>
@@ -479,13 +479,13 @@ function updateTimerDisplay() {
 function adjustBet(amount) {
   const betInput = document.getElementById('betAmount');
   const currentBet = parseInt(betInput.value) || 0;
-  const newBet = Math.max(10, Math.min(500, Math.min(<%= user.credits %>, currentBet + amount)));
+  const newBet = Math.max(10, Math.min(500, Math.min(<%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %>, currentBet + amount)));
   betInput.value = newBet;
   validateBetAmount();
 }
 
 function setBetAmount(amount) {
-  const maxBet = Math.min(500, <%= user.credits %>);
+  const maxBet = Math.min(500, <%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %>);
   const betInput = document.getElementById('betAmount');
   betInput.value = Math.min(amount, maxBet);
   validateBetAmount();
@@ -501,7 +501,7 @@ function setBetAmount(amount) {
 function validateBetAmount() {
   const betInput = document.getElementById('betAmount');
   const bet = parseInt(betInput.value) || 0;
-  const userCredits = <%= user.credits %>;
+  const userCredits = <%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %>;
   
   if (bet < 10 || bet > 500 || bet > userCredits) {
     betInput.classList.add('is-invalid');
@@ -566,7 +566,7 @@ function showBetConfirmation(rocketId, betAmount) {
   document.getElementById('selectedRocketName').textContent = rocketName;
   document.getElementById('selectedRocketDescription').textContent = rocketDescription;
   document.getElementById('confirmBetAmount').textContent = betAmount;
-  document.getElementById('remainingCredits').textContent = <%= user.credits %> - betAmount;
+  document.getElementById('remainingCredits').textContent = <%= <%= typeof user !== 'undefined' ? user.credits : 0 %> %> - betAmount;
   
   const modal = new bootstrap.Modal(document.getElementById('betConfirmModal'));
   modal.show();
